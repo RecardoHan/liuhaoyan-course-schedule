@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#102a43" />
+  <title>刘昊琰的课程表 · 2026-2027 第一学期</title>
+  <style>
+    :root {
+      --ink: #102a43;
+      --muted: #627d98;
+      --line: #d9e2ec;
+      --paper: #f4f7fb;
+      --card: #ffffff;
+      --accent: #1677ff;
+      --accent-soft: #e7f0ff;
+      --good: #00875a;
+      --shadow: 0 12px 32px rgba(16,42,67,.08);
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--paper); }
+    body { margin: 0; color: var(--ink); font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .app { max-width: 960px; margin: 0 auto; min-height: 100vh; padding: 18px 14px 40px; }
+    .topbar { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:18px; }
+    .eyebrow { margin: 0 0 4px; color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing:.04em; }
+    h1 { margin:0; font-size: clamp(25px, 6vw, 36px); line-height:1.15; letter-spacing:-.02em; }
+    .subtitle { margin:7px 0 0; color:var(--muted); font-size:14px; }
+    .today-pill { border:0; background:var(--card); color:var(--ink); padding:10px 13px; border-radius:14px; box-shadow:var(--shadow); font-weight:700; white-space:nowrap; }
+    .hero { background:linear-gradient(135deg,#102a43,#1f5b90); color:#fff; border-radius:24px; padding:20px; box-shadow:var(--shadow); }
+    .hero-row { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; }
+    .hero .label { opacity:.78; font-size:13px; }
+    .hero .date { margin-top:5px; font-weight:800; font-size:clamp(24px,7vw,42px); letter-spacing:-.03em; }
+    .hero .count { font-size:14px; opacity:.9; text-align:right; }
+    .next { margin-top:15px; padding-top:14px; border-top:1px solid rgba(255,255,255,.18); font-size:14px; }
+    .next strong { display:block; margin-top:4px; font-size:16px; }
+    .toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:16px 0; }
+    .toolbar button, .toolbar input { border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:12px; min-height:42px; padding:0 13px; }
+    .toolbar button.primary { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700; }
+    .toolbar button.subtle { background:var(--accent-soft); border-color:transparent; color:#0b5bd3; }
+    .date-input { flex:1 1 150px; min-width:150px; }
+    .tabs { display:flex; gap:8px; margin:12px 0 15px; }
+    .tab { border:0; background:transparent; color:var(--muted); font-weight:700; padding:10px 14px; border-radius:11px; }
+    .tab.active { background:var(--accent-soft); color:#0b5bd3; }
+    .section-title { display:flex; justify-content:space-between; align-items:center; gap:12px; margin:20px 0 10px; }
+    .section-title h2 { margin:0; font-size:20px; }
+    .section-title span { color:var(--muted); font-size:13px; }
+    .schedule { display:grid; gap:11px; }
+    .course { display:grid; grid-template-columns:92px 1fr; gap:14px; align-items:stretch; background:var(--card); border:1px solid var(--line); border-radius:18px; padding:14px; box-shadow:0 4px 16px rgba(16,42,67,.04); border-left:5px solid var(--course, #4c9aff); }
+    .time { color:var(--muted); font-size:13px; line-height:1.5; font-variant-numeric:tabular-nums; }
+    .time strong { display:block; color:var(--ink); font-size:20px; line-height:1.1; }
+    .course h3 { margin:0 0 6px; font-size:17px; line-height:1.3; }
+    .meta { display:flex; flex-wrap:wrap; gap:7px; color:var(--muted); font-size:13px; }
+    .meta span { display:inline-flex; align-items:center; gap:4px; }
+    .badge { display:inline-flex; margin-top:9px; padding:4px 8px; border-radius:999px; background:#f0f5f9; color:#486581; font-size:12px; }
+    .empty { background:var(--card); border:1px dashed #bcccdc; color:var(--muted); border-radius:18px; padding:24px 18px; text-align:center; }
+    .week-grid { display:grid; grid-template-columns:repeat(7,minmax(118px,1fr)); gap:9px; overflow-x:auto; padding-bottom:4px; }
+    .day-column { min-width:118px; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:10px; }
+    .day-column.selected { border:2px solid var(--accent); padding:9px; }
+    .day-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+    .day-head strong { font-size:14px; }
+    .day-head span { color:var(--muted); font-size:12px; }
+    .mini-course { border-left:4px solid var(--course,#4c9aff); background:#f8fbff; border-radius:10px; padding:8px; margin-top:7px; font-size:12px; line-height:1.35; }
+    .mini-course b { display:block; font-size:13px; margin-bottom:3px; }
+    .daily-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:22px; }
+    .daily-card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow:0 4px 16px rgba(16,42,67,.04); }
+    .daily-card h2 { margin:0; font-size:18px; }
+    .card-heading { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .card-heading span { color:#9a6700; background:#fff4cc; border-radius:999px; padding:4px 8px; font-size:11px; white-space:nowrap; }
+    .card-date { margin:8px 0 12px; color:var(--muted); font-size:13px; }
+    .almanac-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:12px 0; }
+    .almanac-item { background:#f8fafc; border-radius:12px; padding:9px 10px; min-height:60px; }
+    .almanac-item small { display:block; color:var(--muted); font-size:12px; margin-bottom:3px; }
+    .almanac-item strong { font-size:14px; line-height:1.45; }
+    .fortune-line { margin:8px 0 0; line-height:1.55; font-size:14px; }
+    .disclaimer { margin:12px 0 0; color:var(--muted); font-size:12px; line-height:1.5; }
+    .mood-question { margin:8px 0 12px; font-size:14px; font-weight:700; }
+    .mood-options { display:flex; flex-wrap:wrap; gap:7px; }
+    .mood-option { border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:999px; padding:8px 10px; min-height:40px; }
+    .mood-option.active { border-color:var(--accent); background:var(--accent-soft); color:#0b5bd3; font-weight:700; }
+    .mood-text { width:100%; min-height:76px; resize:vertical; border:1px solid var(--line); border-radius:12px; padding:10px; margin-top:12px; color:var(--ink); background:#fbfdff; }
+    .mood-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:9px; }
+    .mood-actions button { border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:10px; padding:8px 11px; min-height:40px; }
+    .mood-actions .save { border-color:var(--accent); background:var(--accent); color:#fff; font-weight:700; }
+    .mood-status { min-height:20px; margin:8px 0 0; color:var(--good); font-size:12px; }
+    .help { margin-top:22px; padding:16px; background:#fff9e6; border:1px solid #f8d67a; border-radius:16px; color:#7a4d00; font-size:13px; line-height:1.65; }
+    .help strong { color:#5f3c00; }
+    footer { margin-top:22px; color:var(--muted); font-size:12px; text-align:center; }
+    @media (max-width: 580px) {
+      .app { padding:14px 12px 32px; }
+      .topbar { align-items:center; }
+      .today-pill { padding:9px 10px; font-size:13px; }
+      .hero { border-radius:20px; padding:17px; }
+      .hero-row { align-items:flex-start; flex-direction:column; gap:6px; }
+      .hero .count { text-align:left; }
+      .course { grid-template-columns:76px 1fr; gap:11px; padding:12px; }
+      .time strong { font-size:18px; }
+      .course h3 { font-size:16px; }
+      .toolbar { gap:8px; }
+      .toolbar button, .toolbar input { min-height:40px; padding:0 10px; }
+      .daily-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">2026—2027 学年第 1 学期</p>
+        <h1>刘昊琰的课程表</h1>
+        <p class="subtitle">打开页面就能看到小刘同学当天行程，也可以导入手机日历。</p>
+      </div>
+      <button id="todayTop" class="today-pill" type="button">回到今天</button>
+    </header>
+
+    <section class="hero" aria-live="polite">
+      <div class="hero-row">
+        <div>
+          <div class="label" id="weekLabel">第 1 周 · 星期一</div>
+          <div class="date" id="dateLabel">2026/09/07</div>
+        </div>
+        <div class="count" id="countLabel">今日 0 节课</div>
+      </div>
+      <div class="next" id="nextLabel">今天没有安排课程</div>
+    </section>
+
+    <div class="toolbar" aria-label="日期和导出操作">
+      <button id="prevDay" type="button" aria-label="前一天">‹ 前一天</button>
+      <input id="dateInput" class="date-input" type="date" aria-label="选择日期" />
+      <button id="nextDay" type="button" aria-label="后一天">后一天 ›</button>
+      <button id="demoDate" class="subtle" type="button">查看 9/10</button>
+      <button id="exportDay" class="primary" type="button">导入当天</button>
+      <button id="exportTerm" type="button">导入整学期</button>
+    </div>
+
+    <nav class="tabs" aria-label="视图切换">
+      <button class="tab active" data-view="day" type="button">今日行程</button>
+      <button class="tab" data-view="week" type="button">本周课表</button>
+    </nav>
+
+    <section id="dayView">
+      <div class="section-title"><h2 id="dayTitle">今日课程</h2><span id="dayHint"></span></div>
+      <div id="daySchedule" class="schedule"></div>
+    </section>
+
+    <section id="weekView" hidden>
+      <div class="section-title"><h2 id="weekTitle">第 1 周</h2><span>点击某一天查看当天行程</span></div>
+      <div id="weekGrid" class="week-grid"></div>
+    </section>
+
+    <section class="daily-grid" aria-label="刘昊琰今日状态">
+      <article class="daily-card">
+        <div class="card-heading"><h2>今日运势（民俗参考）</h2><span>仅供参考</span></div>
+        <p id="almanacDate" class="card-date"></p>
+        <div class="almanac-grid">
+          <div class="almanac-item"><small>今日状态</small><strong id="almanacLevel"></strong></div>
+          <div class="almanac-item"><small>幸运色 / 数字</small><strong id="almanacLucky"></strong></div>
+          <div class="almanac-item"><small>宜</small><strong id="almanacYi"></strong></div>
+          <div class="almanac-item"><small>忌</small><strong id="almanacJi"></strong></div>
+        </div>
+        <p id="almanacFortune" class="fortune-line"></p>
+        <p class="disclaimer">黄历和运势内容由离线娱乐性算法生成，仅供娱乐和参考，请以实际情况为准。</p>
+      </article>
+
+      <article class="daily-card">
+        <div class="card-heading"><h2>刘昊琰·今日状态</h2><span>本机保存</span></div>
+        <p id="moodDate" class="card-date"></p>
+        <p class="mood-question">小刘同学今天心情怎么样？</p>
+        <div id="moodOptions" class="mood-options">
+          <button class="mood-option" type="button" data-mood="😀 很好" aria-pressed="false">😀 很好</button>
+          <button class="mood-option" type="button" data-mood="🙂 不错" aria-pressed="false">🙂 不错</button>
+          <button class="mood-option" type="button" data-mood="😐 一般" aria-pressed="false">😐 一般</button>
+          <button class="mood-option" type="button" data-mood="😣 有点累" aria-pressed="false">😣 有点累</button>
+          <button class="mood-option" type="button" data-mood="😴 想休息" aria-pressed="false">😴 想休息</button>
+        </div>
+        <textarea id="moodText" class="mood-text" maxlength="120" placeholder="写下小刘同学今天的心情……"></textarea>
+        <div class="mood-actions"><button id="saveMood" class="save" type="button">保存今天的心情</button><button id="clearMood" type="button">清除</button></div>
+        <p id="moodStatus" class="mood-status" aria-live="polite"></p>
+      </article>
+    </section>
+
+    <aside class="help">
+      <strong>导入手机日历：</strong>点“导入当天”或“导入整学期”后会下载一个日历文件。iPhone 通常会直接弹出“添加到日历”；安卓手机下载后，选择“日历”或“用其他应用打开”即可。若浏览器只保存文件，请在文件管理器中点开这个 `.ics` 文件。
+    </aside>
+    <footer>课表依据你提供的学期课表整理；周次从 2026/08/31（周一）开始。</footer>
+  </main>
+
+  <script>
+    // 9 月 10 日是第 2 周周四：学期首周为 2026/08/31—09/06。
+    const semesterStart = new Date(2026, 7, 31, 12);
+    const semesterWeeks = 16;
+    const periodTimes = {
+      1:['08:00','08:50'], 2:['09:00','09:50'], 3:['10:10','11:00'], 4:['11:10','12:00'],
+      5:['13:30','14:20'], 6:['14:30','15:20'], 7:['15:40','16:30'], 8:['16:40','17:30'],
+      9:['18:30','19:20'], 10:['19:30','20:20'], 11:['20:30','21:20']
+    };
+    const weekdayNames = ['星期一','星期二','星期三','星期四','星期五','星期六','星期日'];
+    const shortWeekdayNames = ['一','二','三','四','五','六','日'];
+    const colors = ['#f15b6c','#4c9aff','#25b89a','#ff9f43','#845ec2','#1677ff','#e56b6f','#2f80ed'];
+
+    // weekday 使用 1—7；weeks 可以是 [1,16]（连续周）或具体周次数组。
+    const courses = [
+      {id:'mao-mon', weekday:1, start:1, end:2, name:'毛泽东思想和中国特色社会主义理论体系概论', location:'塔湾校区南304', weeks:[1,16], color:colors[0]},
+      {id:'litigation-mon', weekday:1, start:3, end:4, name:'刑事诉讼法学（含刑事证据学）', location:'塔湾校区警务训练中心203', weeks:[1,16], color:colors[5]},
+      {id:'forensics-mon', weekday:1, start:5, end:6, name:'刑事科学技术通论（文检学）', location:'塔湾校区南104', weeks:[1,8], color:colors[1]},
+      {id:'logic-mon', weekday:1, start:5, end:6, name:'形式逻辑', location:'塔湾校区警务训练中心203', weeks:[9,12], color:colors[6]},
+      {id:'telecom-mon', weekday:1, start:9, end:10, name:'电信网络诈骗犯罪治理', location:'塔湾校区南阶4', weeks:[1,8], color:colors[3]},
+      {id:'english', weekday:2, start:1, end:2, name:'大学英语III', location:'塔湾校区南202', weeks:[1,16], color:colors[1]},
+      {id:'logic-tue', weekday:2, start:3, end:4, name:'形式逻辑', location:'塔湾校区警务训练中心203', weeks:[9,16], color:colors[6]},
+      {id:'public-tue', weekday:2, start:5, end:6, name:'公安信访工作', location:'塔湾校区北302', weeks:[1,4], color:colors[3]},
+      {id:'forensics-tue', weekday:2, start:5, end:6, name:'刑事科学技术通论（痕检学）', location:'塔湾校区北302', weeks:[9,16], color:colors[1]},
+      {id:'weapon', weekday:2, start:7, end:8, name:'警察武器使用', location:'塔湾校区射击中心（训练场地2）', weeks:[1,16], color:colors[4]},
+      {id:'food-tue', weekday:2, start:9, end:10, name:'食药环犯罪案件侦查', location:'塔湾校区南阶3', weeks:[1,8], color:colors[5]},
+      {id:'crime-psych', weekday:3, start:1, end:2, name:'犯罪心理学', location:'塔湾校区警务训练中心203', weeks:[1,16], color:colors[2]},
+      {id:'litigation-wed', weekday:3, start:3, end:4, name:'刑事诉讼法学（含刑事证据学）', location:'塔湾校区警务训练中心203', weeks:[1,16], color:colors[5]},
+      {id:'photo', weekday:3, start:9, end:11, name:'刑事摄影', location:'塔湾校区实验鉴定中心417', weeks:[1,11], color:colors[1]},
+      {id:'public-thu-1', weekday:4, start:1, end:2, name:'公安信访工作', location:'塔湾校区北302', weeks:[1,8], color:colors[3]},
+      {id:'forensics-thu', weekday:4, start:1, end:2, name:'刑事科学技术通论（痕检学）', location:'塔湾校区北302', weeks:[9,10], color:colors[1]},
+      {id:'electronic-thu', weekday:4, start:1, end:2, name:'电子数据勘验技术', location:'塔湾校区实验鉴定中心336—337', weeks:[13,16], color:colors[3]},
+      {id:'ai-thu', weekday:4, start:3, end:4, name:'人工智能与数据警务应用', location:'塔湾校区实验鉴定中心342—343', weeks:[1,4], color:colors[4]},
+      {id:'forensics-chem', weekday:4, start:3, end:4, name:'刑事科学技术通论（法化学）', location:'塔湾校区南601', weeks:[9,16], color:colors[1]},
+      {id:'community', weekday:4, start:5, end:6, name:'社区警务', location:'塔湾校区北301', weeks:[1,16], color:colors[2]},
+      {id:'mao-thu', weekday:4, start:7, end:8, name:'毛泽东思想和中国特色社会主义理论体系概论', location:'塔湾校区南204', weeks:[1,4], color:colors[0]},
+      {id:'policy-thu', weekday:4, start:7, end:8, name:'形势与政策', location:'塔湾校区警务训练中心203', weeks:[11,13], color:colors[6]},
+      {id:'telecom-thu', weekday:4, start:9, end:10, name:'电信网络诈骗犯罪治理', location:'塔湾校区南阶4', weeks:[1,8], color:colors[3]},
+      {id:'ai-fri', weekday:5, start:1, end:2, name:'人工智能与数据警务应用', location:'塔湾校区实验鉴定中心342—343', weeks:[1,8], color:colors[4]},
+      {id:'forensics-fri', weekday:5, start:1, end:3, name:'刑事科学技术通论（痕检学）', location:'塔湾校区实验鉴定中心505', weeks:[13,16], color:colors[1]},
+      {id:'group', weekday:5, start:3, end:4, name:'群体性事件处置', location:'塔湾校区北102', weeks:[1,8], color:colors[5]},
+      {id:'electronic-fri', weekday:5, start:5, end:6, name:'电子数据勘验技术', location:'塔湾校区实验鉴定中心336—337', weeks:[9,16], color:colors[3]},
+      {id:'food-fri', weekday:5, start:9, end:10, name:'食药环犯罪案件侦查', location:'塔湾校区南阶2', weeks:[1,8], color:colors[5]}
+    ];
+
+    const $ = (id) => document.getElementById(id);
+    const pad = (n) => String(n).padStart(2,'0');
+    const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const displayDate = (d) => `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())}`;
+    const dateFromIso = (s) => { const [y,m,day] = s.split('-').map(Number); return new Date(y,m-1,day,12); };
+    const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+    const weekNumber = (date) => Math.floor((new Date(date.getFullYear(),date.getMonth(),date.getDate()) - new Date(semesterStart.getFullYear(),semesterStart.getMonth(),semesterStart.getDate())) / 86400000 / 7) + 1;
+    const weekday = (date) => { const day = date.getDay(); return day === 0 ? 7 : day; };
+    const activeInWeek = (course, week) => Array.isArray(course.weeks) && (course.weeks.length === 2 ? week >= course.weeks[0] && week <= course.weeks[1] : course.weeks.includes(week));
+    const coursesForDate = (date) => { const w = weekNumber(date), wd = weekday(date); return courses.filter(c => c.weekday === wd && activeInWeek(c,w)).sort((a,b)=>a.start-b.start); };
+    const rangeText = (c) => `${periodTimes[c.start][0]}—${periodTimes[c.end][1]}`;
+    const dateForWeekDay = (week, wd) => addDays(semesterStart, (week-1)*7 + (wd-1));
+    const inSemester = (date) => weekNumber(date) >= 1 && weekNumber(date) <= semesterWeeks;
+    const moodStoragePrefix = 'liuhaoyan-mood-v1-';
+    const moodChoices = ['😀 很好','🙂 不错','😐 一般','😣 有点累','😴 想休息'];
+
+    function daySeed(date) {
+      return Math.abs(Math.floor((Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()) - Date.UTC(2026,0,1)) / 86400000));
+    }
+    function lunarLabel(date) {
+      try {
+        return new Intl.DateTimeFormat('zh-CN-u-ca-chinese', {year:'numeric', month:'long', day:'numeric'}).format(date);
+      } catch (error) {
+        return '农历日期暂不可用';
+      }
+    }
+    function almanacForDate(date) {
+      const seed = daySeed(date);
+      const levels = ['平稳','小吉','顺势','吉','先缓后顺'];
+      const yi = ['按时上课、整理资料','专注学习、适度运动','复习重点、和同学交流','完成待办、早点休息','规划明日、保持节奏'];
+      const ji = ['熬夜、临时拖延','连续久坐、忘记喝水','把事情都留到最后','情绪化做决定、过度内耗','忽略休息、安排过满'];
+      const fortunes = ['今天适合把一件小事做完整，完成感会比想象中更好。','课程间隙留一点缓冲，按自己的节奏推进就好。','先处理最重要的一件事，再考虑其它安排，效率会更稳定。','和熟悉的人聊几句，可能会得到一个有用的提醒。','今天的关键词是“稳住”，不必因为小波折否定自己。'];
+      const luckyColors = ['蓝色','绿色','橙色','紫色','米白色'];
+      return { lunar:lunarLabel(date), level:levels[seed%levels.length], yi:yi[seed%yi.length], ji:ji[seed%ji.length], fortune:fortunes[seed%fortunes.length], lucky:`${luckyColors[seed%luckyColors.length]} / ${seed%9+1}` };
+    }
+    function moodStorageKey(date) { return `${moodStoragePrefix}${iso(date)}`; }
+    function loadMood(date) {
+      try {
+        const raw = localStorage.getItem(moodStorageKey(date));
+        return raw ? JSON.parse(raw) : {};
+      } catch (error) {
+        return {};
+      }
+    }
+    function saveMoodRecord(date, record) {
+      try {
+        localStorage.setItem(moodStorageKey(date), JSON.stringify(record));
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+    function renderDailyTips(date) {
+      const info = almanacForDate(date);
+      $('almanacDate').textContent = `${displayDate(date)} · ${info.lunar}`;
+      $('almanacLevel').textContent = info.level;
+      $('almanacLucky').textContent = info.lucky;
+      $('almanacYi').textContent = info.yi;
+      $('almanacJi').textContent = info.ji;
+      $('almanacFortune').textContent = `今日提示：${info.fortune}`;
+
+      const saved = loadMood(date);
+      let selectedChoice = moodChoices.includes(saved.choice) ? saved.choice : '';
+      $('moodDate').textContent = `${displayDate(date)} · ${inSemester(date) ? `第 ${weekNumber(date)} 周` : '学期外日期也可以记录'}`;
+      $('moodText').value = typeof saved.text === 'string' ? saved.text : '';
+      const refreshMoodButtons = () => document.querySelectorAll('.mood-option').forEach(button => {
+        const active = button.dataset.mood === selectedChoice;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      refreshMoodButtons();
+      $('moodStatus').textContent = saved.text ? `小刘同学今天心情：${saved.text}` : '';
+      document.querySelectorAll('.mood-option').forEach(button => button.onclick = () => {
+        selectedChoice = button.dataset.mood;
+        $('moodText').value = selectedChoice;
+        refreshMoodButtons();
+      });
+      $('moodText').oninput = () => {
+        if ($('moodText').value.trim() !== selectedChoice) {
+          selectedChoice = '';
+          refreshMoodButtons();
+        }
+      };
+      $('saveMood').onclick = () => {
+        const text = $('moodText').value.trim() || selectedChoice;
+        if (!text) {
+          $('moodStatus').textContent = '先选择一个心情，或写下一句话吧。';
+          return;
+        }
+        const savedOk = saveMoodRecord(date, {choice:selectedChoice, text});
+        $('moodStatus').textContent = savedOk ? `小刘同学今天心情：${text}` : '当前浏览器不允许本机保存，但本次内容仍可查看。';
+      };
+      $('clearMood').onclick = () => {
+        try { localStorage.removeItem(moodStorageKey(date)); } catch (error) { /* 隐私模式下忽略 */ }
+        selectedChoice = '';
+        $('moodText').value = '';
+        $('moodStatus').textContent = '已清除今天的心情记录。';
+        refreshMoodButtons();
+      };
+    }
+
+    let selectedDate = new Date();
+    selectedDate.setHours(12,0,0,0);
+    let view = 'day';
+
+    function render() {
+      const week = weekNumber(selectedDate);
+      const dayCourses = inSemester(selectedDate) ? coursesForDate(selectedDate) : [];
+      $('dateInput').value = iso(selectedDate);
+      $('weekLabel').textContent = inSemester(selectedDate) ? `第 ${week} 周 · ${weekdayNames[weekday(selectedDate)-1]}` : `${weekdayNames[weekday(selectedDate)-1]} · 学期外日期`;
+      $('dateLabel').textContent = displayDate(selectedDate);
+      $('countLabel').textContent = `今日 ${dayCourses.length} 节课`;
+      $('dayTitle').textContent = `${weekdayNames[weekday(selectedDate)-1]}课程`;
+      $('dayHint').textContent = inSemester(selectedDate) ? `第 ${week} 周` : '当前日期不在课表周次内';
+      const next = dayCourses.find(c => c.start >= currentPeriod());
+      $('nextLabel').innerHTML = next ? `接下来 · ${periodTimes[next.start][0]} 开始<strong>${escapeHtml(next.name)}</strong>` : (dayCourses.length ? '今天的课程已经结束' : '今天没有安排课程');
+      $('daySchedule').innerHTML = dayCourses.length ? dayCourses.map(courseCard).join('') : `<div class="empty">这一天没有课程。可以用上方日期选择器查看其他日期。</div>`;
+      renderWeek(week);
+      renderDailyTips(selectedDate);
+    }
+    function currentPeriod() { const now = new Date(); if (iso(now) !== iso(selectedDate)) return 0; const minutes = now.getHours()*60+now.getMinutes(); const entry = Object.entries(periodTimes).find(([,t]) => minutes < Number(t[1].slice(0,2))*60+Number(t[1].slice(3))); return entry ? Number(entry[0]) : 99; }
+    function escapeHtml(s) { return s.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+    function courseCard(c) { return `<article class="course" style="--course:${c.color}"><div class="time"><strong>${c.start}—${c.end}</strong><span>${rangeText(c)}</span></div><div><h3>${escapeHtml(c.name)}</h3><div class="meta"><span>⌖ ${escapeHtml(c.location)}</span></div>${c.note ? `<span class="badge">${escapeHtml(c.note)}</span>` : ''}</div></article>`; }
+    function renderWeek(week) {
+      $('weekTitle').textContent = `第 ${week} 周`;
+      $('weekGrid').innerHTML = [1,2,3,4,5,6,7].map(wd => {
+        const d = dateForWeekDay(week,wd), list = coursesForDate(d), selected = iso(d) === iso(selectedDate);
+        return `<button class="day-column ${selected?'selected':''}" type="button" data-date="${iso(d)}"><div class="day-head"><strong>周${shortWeekdayNames[wd-1]}</strong><span>${d.getMonth()+1}/${d.getDate()}</span></div>${list.length ? list.map(c=>`<div class="mini-course" style="--course:${c.color}"><b>${escapeHtml(c.name)}</b>${c.start}—${c.end} · ${escapeHtml(c.location)}</div>`).join('') : '<div class="empty" style="padding:12px 4px;font-size:12px">无课</div>'}</button>`;
+      }).join('');
+      document.querySelectorAll('.day-column').forEach(el => el.addEventListener('click',()=>{ selectedDate=dateFromIso(el.dataset.date); setView('day'); render(); window.scrollTo({top:0,behavior:'smooth'}); }));
+    }
+    function setView(next) { view = next; $('dayView').hidden = next !== 'day'; $('weekView').hidden = next !== 'week'; document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===next)); }
+
+    function icsEscape(value) { return String(value).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n'); }
+    function icsDate(date, time) { return `${date.getFullYear()}${pad(date.getMonth()+1)}${pad(date.getDate())}T${time.replace(':','')}00`; }
+    function buildIcs(list, label) {
+      const stamp = new Date();
+      const dtstamp = `${stamp.getUTCFullYear()}${pad(stamp.getUTCMonth()+1)}${pad(stamp.getUTCDate())}T${pad(stamp.getUTCHours())}${pad(stamp.getUTCMinutes())}${pad(stamp.getUTCSeconds())}Z`;
+      const events = list.map(({date,course}) => [
+        'BEGIN:VEVENT',
+        `UID:${course.id}-${iso(date)}@course-table`,
+        `DTSTAMP:${dtstamp}`,
+        `DTSTART;TZID=Asia/Shanghai:${icsDate(date,periodTimes[course.start][0])}`,
+        `DTEND;TZID=Asia/Shanghai:${icsDate(date,periodTimes[course.end][1])}`,
+        `SUMMARY:${icsEscape(course.name)}`,
+        `LOCATION:${icsEscape(course.location)}`,
+        `DESCRIPTION:${icsEscape(`第 ${weekNumber(date)} 周，${course.note || '按课表上课'}`)}`,
+        'END:VEVENT'
+      ].join('\r\n')).join('\r\n');
+      return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//我的课程表//CN','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:我的课程表','X-WR-TIMEZONE:Asia/Shanghai',events,'END:VCALENDAR'].join('\r\n');
+    }
+    async function downloadIcs(list, filename) {
+      if (!list.length) { alert('没有可导入的课程。'); return; }
+      const blob = new Blob([buildIcs(list, filename)], {type:'text/calendar;charset=utf-8'});
+      // iOS/安卓支持文件分享时，直接弹出系统分享面板，用户可以选择“日历”。
+      try {
+        const file = new File([blob], filename, {type:'text/calendar'});
+        if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) {
+          await navigator.share({title:'我的课程表', text:filename, files:[file]});
+          return;
+        }
+      } catch (error) {
+        // 用户关闭分享面板时不再重复下载；其它情况继续使用下载回退。
+        if (error && error.name === 'AbortError') return;
+      }
+      const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+    }
+    function dayIcs() { return coursesForDate(selectedDate).map(course=>({date:selectedDate,course})); }
+    function termIcs() {
+      const list=[];
+      for(let w=1; w<=semesterWeeks; w++) for(const c of courses) if(activeInWeek(c,w)) list.push({date:dateForWeekDay(w,c.weekday),course:c});
+      return list.sort((a,b)=>a.date-b.date || a.course.start-b.course.start);
+    }
+
+    $('todayTop').addEventListener('click',()=>{ selectedDate=new Date(); selectedDate.setHours(12,0,0,0); setView('day'); render(); });
+    $('prevDay').addEventListener('click',()=>{ selectedDate=addDays(selectedDate,-1); render(); });
+    $('nextDay').addEventListener('click',()=>{ selectedDate=addDays(selectedDate,1); render(); });
+    $('dateInput').addEventListener('change',e=>{ if(e.target.value){ selectedDate=dateFromIso(e.target.value); render(); }});
+    $('demoDate').addEventListener('click',()=>{ selectedDate=new Date(2026,8,10,12); setView('day'); render(); });
+    $('exportDay').addEventListener('click',()=>downloadIcs(dayIcs(),`课程表-${iso(selectedDate)}.ics`));
+    $('exportTerm').addEventListener('click',()=>downloadIcs(termIcs(),'2026-2027第一学期课程表.ics'));
+    document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>setView(t.dataset.view)));
+    render();
+  </script>
+</body>
+</html>
