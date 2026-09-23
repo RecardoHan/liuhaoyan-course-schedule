@@ -160,7 +160,7 @@
           <div class="almanac-item"><small>忌</small><strong id="almanacJi"></strong></div>
         </div>
         <p id="almanacFortune" class="fortune-line"></p>
-        <p class="disclaimer">黄历和运势内容由离线娱乐性算法生成，仅供娱乐和参考，请以实际情况为准。</p>
+        <p class="disclaimer">黄历和运势内容仅供娱乐和参考；幸运数字使用浏览器安全随机源抽取，每次重新计算可能变化，请以实际情况为准。</p>
       </article>
 
       <article class="daily-card">
@@ -257,6 +257,17 @@
         return '农历日期暂不可用';
       }
     }
+    function secureRandomInt(min, max) {
+      const range = max - min + 1;
+      const cryptoApi = typeof globalThis !== 'undefined' ? globalThis.crypto : (typeof window !== 'undefined' ? window.crypto : null);
+      if (cryptoApi && typeof cryptoApi.getRandomValues === 'function') {
+        const limit = Math.floor(0x100000000 / range) * range;
+        const buffer = new Uint32Array(1);
+        do { cryptoApi.getRandomValues(buffer); } while (buffer[0] >= limit);
+        return min + (buffer[0] % range);
+      }
+      return null;
+    }
     function almanacForDate(date) {
       const seed = daySeed(date);
       const levels = ['平稳','小吉','顺势','吉','先缓后顺'];
@@ -264,7 +275,8 @@
       const ji = ['熬夜、临时拖延','连续久坐、忘记喝水','把事情都留到最后','情绪化做决定、过度内耗','忽略休息、安排过满'];
       const fortunes = ['今天适合把一件小事做完整，完成感会比想象中更好。','课程间隙留一点缓冲，按自己的节奏推进就好。','先处理最重要的一件事，再考虑其它安排，效率会更稳定。','和熟悉的人聊几句，可能会得到一个有用的提醒。','今天的关键词是“稳住”，不必因为小波折否定自己。'];
       const luckyColors = ['蓝色','绿色','橙色','紫色','米白色'];
-      return { lunar:lunarLabel(date), level:levels[seed%levels.length], yi:yi[seed%yi.length], ji:ji[seed%ji.length], fortune:fortunes[seed%fortunes.length], lucky:`${luckyColors[seed%luckyColors.length]} / ${seed%9+1}` };
+      const luckyNumber = secureRandomInt(1,9);
+      return { lunar:lunarLabel(date), level:levels[seed%levels.length], yi:yi[seed%yi.length], ji:ji[seed%ji.length], fortune:fortunes[seed%fortunes.length], lucky:`${luckyColors[seed%luckyColors.length]} / ${luckyNumber === null ? '此浏览器不支持安全抽取' : luckyNumber}` };
     }
     function moodStorageKey(date) { return `${moodStoragePrefix}${iso(date)}`; }
     function loadMood(date) {
